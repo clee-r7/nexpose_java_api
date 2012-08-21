@@ -27,6 +27,7 @@
 package org.rapid7.nexpose.api;
 
 import org.rapid7.nexpose.api.domain.AssetGroupSummary;
+import org.rapid7.nexpose.api.domain.AssetSummary;
 import org.rapid7.nexpose.api.domain.EngineSummary;
 import org.rapid7.nexpose.api.domain.SiteSummary;
 import org.rapid7.nexpose.api.domain.TicketSummary;
@@ -347,6 +348,61 @@ public class APISession
       }
       return sitesList;
    }
+   /**
+    * Lists all of the assets/devices in a site.
+    *
+    * @param sessionId the session to be used if different from the current
+    *        acquired one (You acquire one when you authenticate correctly with
+    *        the login method in the {@link APISession} class). This is a
+    *        String of 40 characters.
+    * @param syncId the synchronization id to identify the response associated
+    *        with the response in asynchronous environments. It can be any
+    *        string. This field is optional.
+    * @param siteId the site id to fetch the assets from
+    * @return a list of assets of type (@link AssetSummary}.
+    * @throws IOException When the API call cannot be performed.
+    * @throws APIException if the API call is not successful or the parsing of
+    *         the response is not correct.
+    */
+   public Iterable<AssetSummary> listSiteDevices(
+      String sessionId,
+      String syncId,
+      String siteId)
+      throws IOException, APIException
+   {
+      List<AssetSummary> assetsList = null;
+      final TemplateAPIRequest request = new SiteDeviceListingRequest(
+         sessionId,
+         syncId,
+         siteId);
+      final APIResponse response = new APIResponse(
+         request(open(request), auth(request)),
+         request.getRequestXML());
+      m_apiResponse = response;
+      if (response.grabNode("//Failure") != null)
+      {
+         m_errorHandler.handleError(
+            request,
+            response,
+            this,
+            "SiteDeviceListingRequest failed");
+         return null;
+      }
+      final NodeList assetNodes =
+         response.grabNodes("/SiteDeviceListingResponse/SiteDevices/device");
+      if (assetNodes != null)
+      {
+         assetsList = new ArrayList<AssetSummary>();
+         for (int i = 0; i < assetNodes.getLength(); i++)
+         {
+            Element assetNode = (Element) assetNodes.item(i);
+            AssetSummary assetSummary = new AssetSummary(assetNode);
+            assetsList.add(assetSummary);
+         }
+      }
+      return assetsList;
+   }
+
 
    /**
     * Lists all of the sites.
