@@ -24,6 +24,7 @@
  */
 package org.rapid7.nexpose.api;
 
+import org.rapid7.nexpose.api.domain.AssetSummary;
 import org.rapid7.nexpose.api.domain.AssetGroupSummary;
 import org.rapid7.nexpose.api.domain.EngineSummary;
 import org.rapid7.nexpose.api.domain.MultiTenantUserSummary;
@@ -66,6 +67,9 @@ public interface Session
       throws IOException, APIException;
 
    Iterable<SiteSummary> listSites(String sessionId, String syncId)
+      throws IOException, APIException;
+
+   Iterable<AssetSummary> listSiteDevices(String sessionId, String syncId, String siteId)
       throws IOException, APIException;
 
    APIResponse siteConfigRequest(String sessionId, String syncId, String siteId)
